@@ -2,8 +2,8 @@ package com.example
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.streaming.Trigger
 import java.util.Properties
-import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
 import scala.io.Source
 
 object HiveToKafkaProducer {
@@ -36,31 +36,16 @@ object HiveToKafkaProducer {
     val df = spark.read.table(hiveTable)
       .where(s"cstone_last_updatetm = '$partitionDate'")
 
-    // Convert DataFrame rows to JSON strings
-    val jsonDF = df.toJSON
+    // Prepare DataFrame for Kafka by casting columns to String
+    val kafkaDF = df.selectExpr("CAST(UUID() AS STRING) AS key", "to_json(struct(*)) AS value")
 
-    // Create Kafka producer properties
-    val props = new Properties()
-    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapServers)
-    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
-    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
-    props.put(ProducerConfig.ACKS_CONFIG, "all")  // Ensures all replicas acknowledge
-    props.put(ProducerConfig.RETRIES_CONFIG, "3")  // Retry in case of failure
+    // Write the DataFrame to Kafka
+    kafkaDF.write
+      .format("kafka")
+      .option("kafka.bootstrap.servers", kafkaBootstrapServers)
+      .option("topic", kafkaTopic)
+      .save()
 
-    // Create Kafka producer
-    val kafkaProducer = new KafkaProducer[String, String](props)
-
-    // Publish JSON data to Kafka topic
-    jsonDF.collect().foreach { record =>
-      val producerRecord = new ProducerRecord[String, String](kafkaTopic, record)
-      kafkaProducer.send(producerRecord)
-      println(s"Sent record: $record")
-    }
-
-    // Close the producer
-    kafkaProducer.close()
-
-    // Stop the Spark session
     spark.stop()
   }
 }
