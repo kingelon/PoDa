@@ -1,3 +1,11 @@
-Our Progress: We have laid a solid foundation for a real-time data processing pipeline. While the current setup is basic, it’s designed with scalability and flexibility in mind to accommodate new data sources and evolving business logic. However, it is still in the early stages and would need further development to match the robustness, scalability, and complexity of a full-scale enterprise solution.
+Modularization: We’ve started by breaking down our real-time pipeline into distinct parts—data ingestion, processing, and storage. Each of these components is designed to work independently, making it easier to add new features or adjust existing ones as we go.
 
-Next Steps: To move toward a more comprehensive framework, we would need to focus on enhancing scalability, adding resilience, improving monitoring, integrating security measures, and automating deployment. Additionally, as more data sources and business logic are defined, the pipeline should be extended to integrate these new elements seamlessly.
+Separation of Concerns: We’re ensuring that our data processing logic in Spark focuses purely on transforming data, while Kafka handles messaging, and HBase manages storage. This keeps each component focused and easy to manage.
+
+Reusability: As we build, we’re creating functions and modules that can be reused in different parts of the pipeline or in future projects. This will save us time and effort as the project grows.
+
+Scalability: Even though we’re starting with a basic setup, we’re thinking ahead about how to scale. For example, our choice of Kafka and Spark Streaming is driven by their ability to handle large-scale data processing as more sources come online.
+
+Maintainability: By writing clean, well-organized code and keeping everything modular, we’re setting ourselves up for easier maintenance down the road. When something needs to change, we’ll be able to do it without disrupting the whole system.
+
+Documentation: We’re keeping track of our decisions and progress in Confluence, making sure that as the project evolves, anyone can pick it up and understand what’s been done and why.
