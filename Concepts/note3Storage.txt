@@ -1,0 +1,41 @@
+Overview
+In this document, we evaluate and select an appropriate HBase storage design to efficiently handle both real-time event processing and batch updates. This decision is crucial as it impacts data retrieval speed, write efficiency, scalability, and maintainability. Below, we describe the various storage design options considered, outline their trade-offs, and explain our final choice based on system requirements.
+
+Design Considerations
+Before diving into specific designs, the following requirements guided our decision-making process:
+
+Efficient Data Retrieval:
+
+The ability to quickly fetch recent events associated with a customer (cust_xref_id).
+
+The ability to retrieve data by GUID for individual device interactions.
+
+Scalability:
+
+The system needs to efficiently handle hundreds of millions of records, supporting multiple GUIDs per customer and multiple events per GUID.
+
+Event Ordering:
+
+Events should be easily retrievable in descending time order (most recent first).
+
+Minimal Redundancy:
+
+We aimed to ensure data consistency while minimizing unnecessary duplication, as it helps maintain storage efficiency and reduces the complexity of data management.
+
+Key Tables
+
+Before diving into specific storage design options, it is important to mention the three key tables used in our system:
+
+Main Event Storage Table:
+
+This table stores all streaming event data. It is keyed by cust_xref_id, with columns containing event details organized by GUID and timestamp.
+
+Lookup Table:
+
+This table maintains the mapping between GUID and cust_xref_id, facilitating efficient lookup operations for GUID-based queries.
+
+Invalid/Missing Customer ID Events Table:
+
+This table stores events that are missing customer IDs or have invalid mappings, allowing for further analysis and troubleshooting of data inconsistencies.
+
+Storage Design Options
