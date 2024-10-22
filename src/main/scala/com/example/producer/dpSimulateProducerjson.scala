@@ -1,15 +1,16 @@
 package com.example
 
-import org.apache.spark.sql.SparkSession
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import java.util.Properties
-import play.api.libs.json.{Json, JsValue}
+import net.liftweb.json._
 import scala.util.Random
 
 object HiveToKafkaProducer {
+  implicit val formats: DefaultFormats.type = DefaultFormats
+
   def main(args: Array[String]): Unit = {
-    if (args.length != 1) {
-      println("Usage: HiveToKafkaProducer <config-file-path>")
+    if (args.length != 2) {
+      println("Usage: HiveToKafkaProducer <config-file-path> <partition-date>")
       System.exit(1)
     }
 
@@ -43,80 +44,80 @@ object HiveToKafkaProducer {
         val randomCorrelationId = java.util.UUID.randomUUID().toString
         val timestamp = System.currentTimeMillis()
 
-        val json: JsValue = Json.obj(
-          "id" -> randomId,
-          "correlationId" -> randomCorrelationId,
-          "sourceRef" -> "600002805",
-          "specversion" -> "1.0.2",
-          "time" -> s"${timestamp}Z",
-          "type" -> "PAGE VIEW",
-          "sourceName" -> "Datapoint",
-          "version" -> "1.0.2",
-          "dataContentType" -> "application/json",
-          "data" -> Json.obj(
-            "eventProcessingOptions" -> Json.obj(
-              "consentedData" -> "NA"
-            ),
-            "eventData" -> Json.obj(
-              "event" -> Json.obj(
-                "datapointAppId" -> "defaultAmexAppID",
-                "additionalField1" -> s"value${Random.nextInt(100)}",
-                "additionalField2" -> s"value${Random.nextInt(100)}"
-              ),
-              "eventSource" -> Json.obj(
-                "digitalDataSource" -> "EDL",
-                "oneAmex" -> "NO",
-                "trackit" -> "YES",
-                "networkType" -> "Internet"
-              ),
-              "page" -> Json.obj(
-                "attributes" -> Json.obj(
-                  "PreviousPageName" -> "US|acq|Business|EmployeeCards|BusinessPlatinum|OfferIncentive"
-                )
-              ),
-              "pageInfo" -> Json.obj(
-                "country" -> "US",
-                "language" -> "en",
-                "pageName" -> "US|acq|Business|EmployeeCards|BusinessPlatinum|OfferIncentive",
-                "url" -> "https://www.americanexpress.com/en-us/business/campaigns/business-platinum/offer-incentive/?sourcecode=A0000HEUJ",
-                "businessUnit" -> "acq",
-                "locale" -> "en-us"
-              ),
-              "device" -> Json.obj(
-                "userAgent" -> "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
-                "deviceClass" -> "Phone",
-                "deviceName" -> "iPhone",
-                "deviceBrand" -> "Apple",
-                "deviceVersion" -> "iPhone",
-                "operatingSystemClass" -> "Mobile",
-                "operatingSystemName" -> "iOS",
-                "operatingSystemVersion" -> "17.5.1",
-                "layoutEngineClass" -> "Browser",
-                "layoutEngineName" -> "AppleWebKit",
-                "layoutEngineVersion" -> "605.1.15",
-                "screenResolution" -> "390x844",
-                "colorDepth" -> 24
-              ),
-              "geoLocation" -> Json.obj(
-                "country" -> "United States",
-                "city" -> "Ann Arbor",
-                "continent" -> "North America",
-                "timezone" -> "America/Detroit",
-                "ipAddress" -> "68.40.205.83",
-                "postalCode" -> "48103"
-              ),
-              "user" -> Json.obj(
-                "userId" -> java.util.UUID.randomUUID().toString,
-                "addsId" -> "N/A",
-                "userAgentId" -> java.util.UUID.randomUUID().toString,
-                "authenticated" -> "NO",
-                "sessionId" -> java.util.UUID.randomUUID().toString
-              )
-            )
-          )
+        val json = JObject(
+          JField("id", JString(randomId)),
+          JField("correlationId", JString(randomCorrelationId)),
+          JField("sourceRef", JString("600002805")),
+          JField("specversion", JString("1.0.2")),
+          JField("time", JString(s"${timestamp}Z")),
+          JField("type", JString("PAGE VIEW")),
+          JField("sourceName", JString("Datapoint")),
+          JField("version", JString("1.0.2")),
+          JField("dataContentType", JString("application/json")),
+          JField("data", JObject(
+            JField("eventProcessingOptions", JObject(
+              JField("consentedData", JString("NA"))
+            )),
+            JField("eventData", JObject(
+              JField("event", JObject(
+                JField("datapointAppId", JString("defaultAmexAppID")),
+                JField("additionalField1", JString(s"value${Random.nextInt(100)}")),
+                JField("additionalField2", JString(s"value${Random.nextInt(100)}"))
+              )),
+              JField("eventSource", JObject(
+                JField("digitalDataSource", JString("EDL")),
+                JField("oneAmex", JString("NO")),
+                JField("trackit", JString("YES")),
+                JField("networkType", JString("Internet"))
+              )),
+              JField("page", JObject(
+                JField("attributes", JObject(
+                  JField("PreviousPageName", JString("US|acq|Business|EmployeeCards|BusinessPlatinum|OfferIncentive"))
+                ))
+              )),
+              JField("pageInfo", JObject(
+                JField("country", JString("US")),
+                JField("language", JString("en")),
+                JField("pageName", JString("US|acq|Business|EmployeeCards|BusinessPlatinum|OfferIncentive")),
+                JField("url", JString("https://www.americanexpress.com/en-us/business/campaigns/business-platinum/offer-incentive/?sourcecode=A0000HEUJ")),
+                JField("businessUnit", JString("acq")),
+                JField("locale", JString("en-us"))
+              )),
+              JField("device", JObject(
+                JField("userAgent", JString("Mozilla/5.0 (iPhone; CPU iPhone OS 17_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1")),
+                JField("deviceClass", JString("Phone")),
+                JField("deviceName", JString("iPhone")),
+                JField("deviceBrand", JString("Apple")),
+                JField("deviceVersion", JString("iPhone")),
+                JField("operatingSystemClass", JString("Mobile")),
+                JField("operatingSystemName", JString("iOS")),
+                JField("operatingSystemVersion", JString("17.5.1")),
+                JField("layoutEngineClass", JString("Browser")),
+                JField("layoutEngineName", JString("AppleWebKit")),
+                JField("layoutEngineVersion", JString("605.1.15")),
+                JField("screenResolution", JString("390x844")),
+                JField("colorDepth", JInt(24))
+              )),
+              JField("geoLocation", JObject(
+                JField("country", JString("United States")),
+                JField("city", JString("Ann Arbor")),
+                JField("continent", JString("North America")),
+                JField("timezone", JString("America/Detroit")),
+                JField("ipAddress", JString("68.40.205.83")),
+                JField("postalCode", JString("48103"))
+              )),
+              JField("user", JObject(
+                JField("userId", JString(java.util.UUID.randomUUID().toString)),
+                JField("addsId", JString("N/A")),
+                JField("userAgentId", JString(java.util.UUID.randomUUID().toString)),
+                JField("authenticated", JString("NO")),
+                JField("sessionId", JString(java.util.UUID.randomUUID().toString))
+              ))
+            ))
+          ))
         )
 
-        json.toString()
+        compactRender(json)
       }
 
       // Continuously send data to Kafka
