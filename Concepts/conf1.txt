@@ -1,0 +1,20 @@
+1. Data Ingestion and Profiling
+Introduction to Data Sources
+Overview of primary data sources (e.g., clickstream data, CRM data).
+Data Structure and Format Analysis
+Description of data formats (JSON, Avro) and their structures.
+GUID and Cookie Management
+How GUIDs and cookies are generated, stored, and used for tracking.
+Data Attributes and Metadata
+Key attributes collected (e.g., session data, device info, geolocation) and their relevance.
+Challenges in Data Profiling
+Common challenges in profiling, like data variability, duplicate data, etc.
+2. Data Storage and Management
+Storage Strategy Overview
+Summary of selected storage solutions (HBase, data lake, etc.) and reasoning.
+HBase Table Structure and Schema
+Detailed schema for HBase tables, including fields like event details, device metadata, etc.
+Data Compression and Optimization Techniques
+Compression methods (e.g., Snappy) and strategies for optimizing storage.
+Data Retention and Archival Policies
+Policies for data retention, classification (essential vs. obsolete), and archival frequency.
