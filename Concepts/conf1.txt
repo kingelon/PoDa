@@ -1,20 +1,18 @@
-1. Data Ingestion and Profiling
-Introduction to Data Sources
-Overview of primary data sources (e.g., clickstream data, CRM data).
-Data Structure and Format Analysis
-Description of data formats (JSON, Avro) and their structures.
-GUID and Cookie Management
-How GUIDs and cookies are generated, stored, and used for tracking.
-Data Attributes and Metadata
-Key attributes collected (e.g., session data, device info, geolocation) and their relevance.
-Challenges in Data Profiling
-Common challenges in profiling, like data variability, duplicate data, etc.
-2. Data Storage and Management
-Storage Strategy Overview
-Summary of selected storage solutions (HBase, data lake, etc.) and reasoning.
-HBase Table Structure and Schema
-Detailed schema for HBase tables, including fields like event details, device metadata, etc.
-Data Compression and Optimization Techniques
-Compression methods (e.g., Snappy) and strategies for optimizing storage.
-Data Retention and Archival Policies
-Policies for data retention, classification (essential vs. obsolete), and archival frequency.
+Device Fingerprinting:
+
+Purpose: Identify devices based on unique characteristics, even without cookies or GUIDs.
+Method: Collect attributes like browser type, screen resolution, installed fonts, and operating system details to create a unique device profile.
+Considerations: While effective, device fingerprinting raises privacy concerns and may be restricted by regulations.
+2. Behavioral Analysis:
+
+Purpose: Detect patterns indicative of offer manipulation.
+Method: Monitor metrics such as:
+Session Frequency: Unusually high visit rates.
+Navigation Patterns: Repeated sequences of actions.
+Time Spent: Consistently short sessions.
+Implementation: Use machine learning models to identify anomalies in user behavior.
+3. IP Address Monitoring:
+
+Purpose: Track users based on their network location.
+Method: Log IP addresses and correlate them with user activities.
+Limitations: Dynamic IPs and shared networks can reduce reliability.
