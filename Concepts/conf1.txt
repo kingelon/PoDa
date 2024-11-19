@@ -1,54 +1,126 @@
-In dealing with high-velocity, high-volume clickstream data and events, industry best practices focus on balancing storage efficiency, processing speed, and cost-effectiveness. Here’s a summary of strategies and associated considerations specifically for clickstream data:
+Graph-Related Business Intelligence Layer (BIL)
+Why Use Graph Technology?
+Graph databases excel at modeling and analyzing relationships between entities. In our case, we can use graph structures to:
 
-### 1. **Data Filtering and Aggregation at Ingestion**
-   - **Filtering Irrelevant Data**: Many clickstream events, like minor UI interactions, may not add much analytical value. By filtering out or sampling less valuable data at the ingestion layer, you can reduce storage and processing loads.
-   - **Real-Time Aggregation**: Aggregating data early in the pipeline (e.g., session-based or hourly aggregation) reduces data granularity without losing key insights. Aggregating data helps reduce redundancy by storing summarized metrics instead of every individual event, minimizing storage and processing costs.
+Uncover hidden connections between sessions.
+Identify patterns indicative of gaming behavior or fraud.
+Enhance user segmentation based on behavioral and device attributes.
+Provide insights that are difficult to extract using traditional relational databases.
+Key Graph Components Based on Schema
+Nodes (Vertices):
 
-   **Associated Costs**: Reduces storage and processing costs since only meaningful data is stored, but may require additional computing resources for real-time filtering and aggregation.
+Sessions: Each event id represents a session node.
+Devices: Based on a combination of device attributes.
+IP Addresses: If available (from geoLocation or other means).
+Click Events: Individual actions from clickName.
+Pages: Derived from pageInfo and eventData.
+Locations: Geographic entities like country, city, and region.
+Browsers and Operating Systems: From agentName, agentVersion, operatingSystemName, etc.
+Edges (Relationships):
 
-### 2. **Storage Strategy: Hybrid and Tiered Storage Systems**
-   - **Cold vs. Hot Storage**: Frequently accessed data (e.g., recent clickstream data) is stored in faster, more expensive storage, while older or less frequently accessed data is moved to cheaper, slower storage (e.g., object storage in the cloud).
-   - **NoSQL Solutions (HBase, Cassandra)**: NoSQL databases are often used due to their ability to handle high write throughput. HBase, for instance, can be optimized for both storage efficiency (with compression) and read speed for clickstream queries.
-   - **Data Lakes for Raw Storage**: For cost-effective storage, data lakes (like Amazon S3 or Google Cloud Storage) store raw clickstream data in a compressed format. This setup is used to retain historical data that can be accessed later if needed, without incurring the high costs of keeping everything in hot storage.
+Session-to-Device: Connect sessions to devices based on device attributes.
+Session-to-Location: Link sessions to geographic locations.
+Session-to-Session: Establish relationships between sessions sharing common attributes.
+Session-to-Click Event: Sequence of clicks within a session.
+Device-to-Device: If devices share similar attributes, indicating possible shared usage.
+Session-to-Browser/OS: Connect sessions to the browser and OS used.
+3. Deeper and Convincing Use Cases
+Use Case 1: Identifying Gaming Behavior
+Objective:
 
-   **Associated Costs**: Reduces primary storage costs but may incur additional retrieval costs if archived data is frequently accessed. Cost optimization requires balancing retrieval needs with storage location (e.g., using cloud "cold storage" options for historical data).
+Detect users attempting to game the system (e.g., clearing cookies to receive better offers) by identifying patterns of behavior and device usage across sessions.
 
-### 3. **Data Compression Techniques**
-   - **Compression Algorithms**: Using Snappy, LZO, or Zstandard compression reduces the storage footprint of high-velocity clickstream data, making it more affordable to store massive volumes. Compression ratios depend on the data structure; JSON, for example, compresses well and often achieves 50–90% reduction.
-   - **Columnar Storage Formats (e.g., Parquet, ORC)**: Storing clickstream data in columnar formats allows for efficient compression and faster query performance, especially for analytical workloads, as only relevant columns need to be read.
+Implementation:
 
-   **Associated Costs**: While compression reduces storage costs, it introduces CPU overhead for compressing and decompressing data, which may impact real-time processing if not managed effectively.
+Device Fingerprinting:
 
-### 4. **Data Retention and Expiration Policies**
-   - **Short Retention Periods for Raw Events**: Raw clickstream data is often stored for a limited period (e.g., 30–90 days) before being either aggregated or deleted. Retaining only processed or summarized data after this period reduces storage needs without sacrificing valuable insights.
-   - **Event Expiry Policies**: Set policies to automatically delete or archive events after they become less relevant (e.g., page view events older than six months), keeping only data required for long-term analysis or regulatory compliance.
+Composite Device ID: Create a hash or composite key from device attributes such as userAgent, deviceClass, operatingSystemNameVersion, screenResolution, and viewport.
+Graph Construction:
+Device Nodes: Represent unique composite device IDs.
+Session Nodes: Each session connects to its corresponding device node.
+Analysis:
+Identify multiple sessions connected to the same device node but with different ids.
+Look for patterns where sessions occur in close temporal proximity, suggesting the same user.
+Business Value:
 
-   **Associated Costs**: Limits long-term storage expenses by removing redundant or outdated data, though it requires careful planning to avoid losing potentially valuable historical data.
+Fraud Prevention: Detect and mitigate attempts to exploit offers.
+Offer Optimization: Adjust strategies to prevent gaming while maintaining user engagement.
+Use Case 2: Session Pathway Analysis
+Objective:
 
-### 5. **Stream Processing and Transformation**
-   - **In-Stream ETL**: Performing transformations (e.g., filtering, aggregation) in real-time using stream processing frameworks (like Apache Kafka Streams, Flink, or Spark Streaming) reduces storage needs by transforming raw data before it’s stored.
-   - **Batch vs. Real-Time Processing**: Using batch processing for non-urgent transformations can be more cost-effective than real-time, particularly for historical analysis or less time-sensitive aggregations.
+Analyze clickstream sequences to understand common user pathways and identify points of friction or drop-off.
 
-   **Associated Costs**: Real-time transformation can increase compute costs, especially if processing high-velocity streams. However, it reduces long-term storage and later processing expenses, as data is pre-processed before storage.
+Implementation:
 
-### 6. **Metadata Management and Data Deduplication**
-   - **Deduplication Techniques**: Implement deduplication processes to eliminate repeated or redundant events (e.g., multiple identical page views from the same session). This can be done through hashing or comparison of event metadata.
-   - **Metadata Storage**: Storing only metadata (e.g., timestamps, session IDs, page types) for certain events instead of the full event data can reduce the storage footprint while preserving enough information for analysis.
+Graph Construction:
 
-   **Associated Costs**: Deduplication reduces storage costs by removing redundant data but can add computational overhead, particularly if implemented in-stream.
+Click Event Nodes: Each unique click or action.
+Edges: Directed edges from one click event to the next within the same session.
+Session Paths: Sequences of click events forming pathways.
+Analysis:
 
-### 7. **Customer Identification and Data Enrichment**
-   - **Enrichment Using Device Fingerprints**: To identify users attempting to manipulate offers, store enriched metadata, such as device fingerprint or IP-based location, in a NoSQL database, which allows for flexible schema and high write throughput.
-   - **Customer Segmentation Using Aggregated Events**: Storing summarized customer behavior metrics rather than individual events makes it easier to identify patterns and run segmentation analyses without requiring detailed click-by-click data.
+Identify the most common pathways leading to successful conversions or exits.
+Detect unusual or looping pathways that may indicate user confusion or technical issues.
+Business Value:
 
-   **Associated Costs**: While enrichment can increase storage slightly, it simplifies the analysis layer and can reduce the need for complex joins across raw data, making analytical queries faster and more cost-efficient.
+User Experience Enhancement: Improve site navigation and layout based on common user paths.
+Conversion Rate Optimization: Streamline pathways to desired outcomes (e.g., application completion).
+Use Case 3: Geolocation and Regional Insights
+Objective:
 
-### 8. **Cost-Control Strategies with Cloud Storage and Processing**
-   - **On-Demand Scaling and Serverless Architectures**: Using cloud-native, serverless data processing solutions (like AWS Lambda or Google Cloud Functions) for infrequent or low-latency processing tasks can reduce infrastructure costs compared to maintaining always-on servers.
-   - **Cost Monitoring and Budget Alerts**: Implement cost monitoring and alerts to track data ingestion, storage, and processing costs in real-time, allowing you to adjust the data pipeline settings or retention policies if costs exceed budget.
+Leverage geographic data to understand regional engagement and tailor marketing efforts.
 
-   **Associated Costs**: Serverless options offer cost savings by only charging for compute time used, though they may not be as performant for high-throughput, continuous data streams.
+Implementation:
 
----
+Graph Construction:
 
-**Summary**: Balancing storage, retention, and processing costs with performance is crucial in managing clickstream data pipelines. By leveraging tiered storage, compression, real-time ETL, deduplication, and enriched metadata, organizations can effectively manage high-velocity data while controlling costs. Choosing the right storage and processing strategies requires careful consideration of the data's value, analysis needs, and access patterns.
+Location Nodes: Country, region, city.
+Session Nodes: Connected to corresponding location nodes.
+Device and Browser Nodes: Further enrich the graph with device usage by region.
+Analysis:
+
+Identify regions with high engagement or unusual activity.
+Correlate device usage patterns with geographic locations.
+Business Value:
+
+Market Segmentation: Tailor offers and content to specific regions.
+Resource Allocation: Focus marketing efforts where they are most effective.
+Use Case 4: Device and Browser Compatibility Analysis
+Objective:
+
+Determine if certain devices or browsers are associated with higher bounce rates or errors.
+
+Implementation:
+
+Graph Construction:
+
+Browser Nodes: From agentName and agentVersion.
+Operating System Nodes: From operatingSystemName and operatingSystemVersion.
+Edges: Connect sessions to their respective browser and OS nodes.
+Analysis:
+
+Identify clusters of sessions with short durations or high error rates linked to specific browsers or OS versions.
+Detect trends over time as new versions are released.
+Business Value:
+
+Technical Optimization: Prioritize compatibility fixes for problematic devices or browsers.
+User Satisfaction: Improve overall user experience, reducing bounce rates.
+Use Case 5: Temporal Activity Patterns
+Objective:
+
+Analyze session activity over time to identify peak usage periods and anomalous behavior.
+
+Implementation:
+
+Graph Construction:
+
+Time Nodes: Representing hours, days, or other time intervals.
+Edges: Connect sessions to their corresponding time nodes.
+Analysis:
+
+Identify patterns of activity spikes or lulls
+Detect unusual activity at odd hours, which may indicate automated bots or fraudulent activity.
+Business Value:
+
+Operational Planning: Allocate resources during peak times.
+Security Measures: Implement additional verification during periods of anomalous activity.s
