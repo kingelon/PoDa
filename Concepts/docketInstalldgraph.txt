@@ -1,0 +1,9 @@
+
+docker pull dgraph/dgraph:latest
+
+
+
+docker network create dgraph
+docker run -it -d --name dgraph-zero --network dgraph dgraph/dgraph:latest dgraph zero
+docker run -it -d --name dgraph-alpha --network dgraph -p 8080:8080 -p 9080:9080 dgraph/dgraph:latest dgraph alpha --zero dgraph-zero:5080
+docker run -it -d --name dgraph-ratel --network dgraph -p 8000:8000 dgraph/dgraph:latest dgraph-ratel
