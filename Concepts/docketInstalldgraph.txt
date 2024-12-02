@@ -14,3 +14,12 @@ tar -xvzf ratel.tar.gz
 python3 -m http.server 8000
 
 http://localhost:8000
+
+
+
+curl -LO https://github.com/dgraph-io/ratel/releases/latest/download/ratel.tar.gz
+
+tar -xvzf ratel.tar.gz
+
+cd ratel
+python3 -m http.server 8000
