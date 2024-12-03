@@ -1,0 +1,26 @@
+# Event predicates
+id: string @index(exact) .
+timestamp: datetime @index(hour) .
+type: string @index(term) .
+hasEventData: uid @reverse .
+hasDevice: uid @reverse .
+hasGeoLocation: uid @reverse .
+
+# EventData predicates
+datapointAppID: string @index(term) .
+clickName: string @index(term) .
+hasPageInfo: uid @reverse .
+
+# PageInfo predicates
+country: string @index(term) .
+city: string @index(term) .
+locale: string @index(term) .
+
+# Device predicates
+userAgent: string .
+deviceClass: string @index(term) .
+# ... other device predicates
+
+# GeoLocation predicates
+region: string @index(term) .
+continent: string @index(term) .
